@@ -1,4 +1,3 @@
-import discord
 import os
 import discord
 from discord.ext import commands
@@ -22,13 +21,15 @@ async def on_member_join(member):
 
 @client.command(name='del')
 async def delete_message(ctx, amount=2, adm=False):
+    expected_role = 1074791358075785256
+    user_role = ctx.author.roles
     if adm == False:
         if amount <= 15:
             await ctx.channel.purge(limit=amount)
         else:
             await ctx.send('Cantidad maxima de 15')
-    elif adm == True:
-        await ctx.channel.purge(limit=amount)
+    if expected_role in [y.id for y in user_role] and adm == True:
+            await ctx.channel.purge(limit=amount)
 
 @client.command(name='join')
 async def join(ctx):
