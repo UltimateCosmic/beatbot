@@ -1,19 +1,24 @@
 import discord
-
 import os
 import discord
 from discord.ext import commands
+from discord import FFmpegPCMAudio
 from dotenv import load_dotenv
 
 load_dotenv()
 
 intents = discord.Intents.all()
 intents.message_content = True
-client = commands.Bot(command_prefix='$', intents=intents)
+client = commands.Bot(command_prefix='!', intents=intents)
 
 @client.event
 async def on_ready():
     print('No Errors')
+
+@client.event
+async def on_member_join(member):
+    channel = client.get_channel(676597482519789598)
+    await channel.send('Bienvenido')
 
 @client.command(name='del')
 async def delete_message(ctx, amount=2, adm=False):
@@ -29,7 +34,9 @@ async def delete_message(ctx, amount=2, adm=False):
 async def join(ctx):
     if ctx.author.voice:
         channels = ctx.message.author.voice.channel
-        await channels.connect()
+        voice = await channels.connect()
+        source = FFmpegPCMAudio('Noche.mp3')
+        player = voice.play(source)
     else:
         await ctx.send('Nao Nao voce no esta en una canal de voz')
 
