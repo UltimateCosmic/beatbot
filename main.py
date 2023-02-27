@@ -1,5 +1,6 @@
 import os
 import discord
+from pytube import YouTube
 from discord.ext import commands
 from discord import FFmpegPCMAudio
 from dotenv import load_dotenv
@@ -8,7 +9,7 @@ load_dotenv()
 
 intents = discord.Intents.all()
 intents.message_content = True
-client = commands.Bot(command_prefix='!', intents=intents)
+client = commands.Bot(command_prefix='!', intents=intents) 
 
 @client.event
 async def on_ready():
@@ -35,9 +36,7 @@ async def delete_message(ctx, amount=2, adm=False):
 async def join(ctx):
     if ctx.author.voice:
         channels = ctx.message.author.voice.channel
-        voice = await channels.connect()
-        source = FFmpegPCMAudio('Noche.mp3')
-        player = voice.play(source)
+        await channels.connect()
     else:
         await ctx.send('Nao Nao voce no esta en una canal de voz')
 
@@ -48,6 +47,43 @@ async def leave(ctx):
         await ctx.send('Chau')
     else:
         await ctx.send('No puedo salir de un canal si no estoy en un canal salame')
+
+@client.command(name='play')
+async def play_music(ctx, url):
+    server = ctx.message.guild
+    voice_channel = server.voice_client
+    if url == "noche":
+        source = FFmpegPCMAudio('Noche.mp3')
+        player = voice_channel.play(source)
+    else:
+        yt = YouTube(str(url))
+        video = yt.streams.filter(only_audio=True).first()
+        destination = '.'
+        out_file = video.download(output_path=destination) 
+        base, ext = os.path.splitext(out_file)
+        new_file = base + '.mp3'
+        source = FFmpegPCMAudio(new_file)
+        player = voice_channel.play(source)
+        os.rename(out_file, new_file)
+
+@client.command(name='pause')
+async def pause_music(ctx):
+    server = ctx.message.guild
+    voice_channel = server.voice_client
+    voice_channel.pause()
+
+@client.command(name='resume')
+async def resume_music(ctx):
+    server = ctx.message.guild
+    voice_channel = server.voice_client                
+    voice_channel.resume()
+
+@client.command(name='stop')
+async def stop_music(ctx):
+    server = ctx.message.guild
+    voice_channel = server.voice_client
+    voice_channel.stop()
+
 
 
 client.run(os.getenv('BEAT_TOKEN'))
